@@ -1,15 +1,31 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-import router from './router'
+import { useAuthStore } from './stores/authStore'
+import { fakeBackend } from './helpers/fakebackend'
 
 //importo los estilos globales
 import './assets/global.css'
 
 import App from './App.vue'
+import router from './router'
 
-const app = createApp(App)
+fakeBackend()
+startApp()
 
-app.use(createPinia())
-app.use(router)
+async function startApp() {
+    const app = createApp(App)
 
-app.mount('#app')
+    app.use(createPinia())
+    app.use(router)
+
+    try {
+        const authStore = useAuthStore()
+        await authStore.refreshToken()
+    } catch (error) {
+        console.warn('No hay datos de autenticacion para el usuario')
+        console.info('Redirigiendo a login page')
+        router.push('/login')
+    }
+
+    app.mount('#app')
+}

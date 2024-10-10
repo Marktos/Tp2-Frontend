@@ -1,42 +1,62 @@
+<script setup lang="ts">
+
+//Local Import
+// import { useUserStore } from '@/stores/userStore';
+import { useRouter } from 'vue-router';
+import {useAuthStore} from '@/stores/authStore'
+        
+//Librery Import
+import { Form, Field } from 'vee-validate';
+import * as Yup from 'yup'
+        
+// const uStore = useUserStore()
+const authStore = useAuthStore()
+const router = useRouter()
+
+const schema = Yup.object().shape({
+    username : Yup.string().required('Usuario Requerido'),
+    password : Yup.string().required('Password Requerida'),
+})
+
+if (authStore.auth.data) {
+    router.push('/')
+}
+        
+function handleSubmit(values: any, { setErrors }: any) {
+    const { username, password } = values;
+    return authStore.login(username, password).then(() => {
+        router.push('/')
+    })
+    .catch(error => setErrors({ apiError: error}))
+}             
+</script>
 <template>
     <div class="wrapper">
-        <form @submit.prevent="handleSubmit">
+        <Form @submit="handleSubmit" :validation-schema="schema" v-slot="{ errors, isSubmitting }">
             <h1>Login</h1>
         <div class="input-bx">
-            <input v-model="user" type="text" placeholder="Usuario" required>
+            <field  name="username" type="text" :class="{ 'is-invalid': errors.username || errors.apiError }" placeholder="Usuario" required />
             <ion-icon class="icon" name="person-circle"></ion-icon>
+            <div class="invalid-feedbak">{{ errors.username }}</div>
         </div>
         <div class="input-bx">
-            <input v-model="password" type="password" placeholder="Contraseña" required>
+            <Field name="password" type="password" :class="{ 'is-invalid': errors.password || errors.apiError }" placeholder="Contraseña" required/>
             <ion-icon class="icon" name="lock-closed"></ion-icon>
+            <div class="invalid-feedbak">{{ errors.password }}</div>
         </div>
         <div class="remember-forgot">
-            <label><input v-model="remember" type="checkbox"> Recordarme</label>
+            <label><input type="checkbox"> Recordarme</label>
             <a href="#">Olvidaste tu contraseña</a>
         </div>
-            <button type="submit" class="btn">Ingresar</button>
-        </form>
+            <button type="submit" class="btn">
+                <span v-show="isSubmitting" class="loader"></span>
+                <p v-show="!isSubmitting">Ingresar</p>
+            </button>
+            <div v-if="errors.apiError" class="error-alert">{{ errors.apiError }}</div>
+        </Form>
     </div>
 </template>
 
-<script setup lang="ts">
-import { ref } from 'vue';
-import { useUserStore } from '../stores/userStore';
-import { useRouter } from 'vue-router';
-
-const user = ref('');
-const password = ref('');
-const remember = ref(false);
-const router = useRouter();
-const userStore = useUserStore();
-
-const handleSubmit = () => {
-    console.log(`Usuario: ${user.value}, Contraseña: ${password.value}, Recordarme: ${remember.value}`);
-    userStore.setUser({ username: user.value });
-    router.push('/home');
-};
-        
-</script>
 
 <style lang="css" scoped>
 /* estilos del componente */
@@ -76,8 +96,20 @@ const handleSubmit = () => {
     padding: 20px 45px 20px 20px;
 }
 
+.wrapper .input-bx input.is-invalid{
+    width: 100%;
+    height: 100%;
+    background: rgba(250, 150, 150, 0.1);
+    border: 2px solid rgba(255, 0, 0, 0.2);
+    color: red;
+}
+
 .wrapper .input-bx input::placeholder {
     color: #fff;
+}
+
+.wrapper .input-bx input.is-invalid::placeholder {
+    color: red;
 }
 
 .wrapper .input-bx .icon {
@@ -86,6 +118,13 @@ const handleSubmit = () => {
     top: 50%;
     transform: translateY(-50%);
     font-size: 1.5em;
+}
+
+.input-bx .invalid-feedback {
+    padding: 0px 16px;
+    margin: 0;
+    color: red;
+    font-weight: 300;   
 }
 
 .wrapper .remember-forgot {
@@ -120,5 +159,41 @@ const handleSubmit = () => {
     font-size: 1.2em;
     font-weight: 600;
     color: #333;
+}
+
+.wrapper button p{
+    font-size: 1.2em;
+    font-weight: 600;
+    color: #333;
+}
+
+.wrapper .loader {
+    margin: auto 0;
+    width: 24px;
+    height: 24px;
+    border: 4px solid purple;
+    border-bottom-color: transparent;
+    border-radius: 50%;
+    display: inline-block;
+    box-sizing: border-box;
+    animation: rotation 1s linear infinite;
+}
+
+@keyframes rotation {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.wrapper .error-alert {
+    margin: 16px 0 0 0;
+    width: 100%;
+    background: transparent;
+    color: red;
+    text-align: center;
+    font-weight: 400;
 }
 </style>
