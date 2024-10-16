@@ -10,20 +10,30 @@ const usersKey = 'vue-3-jwt-refresh-token-users';
 const users: User[] = JSON.parse(localStorage.getItem(usersKey) || '[]');
 
 // Agregar un usuario test en localstorage si no hay ninguno
-const user: User = { 
+const user: User[] = [
+    { 
     id: 1, 
     firstName: 'Marcos', 
     lastName: 'Neculman', 
-    username: 'test', 
-    password: 'test',
+    username: 'admin', 
+    password: 'admin',
     isAdmin: true, 
     refreshTokens: []
-
+},
+{
+    id: 2, 
+    firstName: 'Usuario', 
+    lastName: 'De Prueba', 
+    username: 'prueba', 
+    password: 'prueba',
+    isAdmin: false, 
+    refreshTokens: []
 }
+]
 
 // si no hay usuarios creamos uno y lo guardamos en almacenamiento local
 if (!users.length) {
-    users.push(user);
+    users.push(...user);
     localStorage.setItem(usersKey, JSON.stringify(users));
 }
 
@@ -159,15 +169,15 @@ function fakeBackend() {
 
             function generateJwtToken(): string {
                 // Crea token que expira en 2 minutos
-                const tokenPayload: JwtPayload = { exp: Math.round(Date.now() / 1000 + 10 * 60) };
+                const tokenPayload: JwtPayload = { exp: Math.round(Date.now() / 1000 + 2 * 60) };
                 const fakeJwtToken: string = `fake-jwt-token.${btoa(JSON.stringify(tokenPayload))}`;
                 return fakeJwtToken;
             }
 
             function generateRefreshToken(): string {
                 const token = new Date().getTime().toString();
-                // Agregar un refresh token que expira en 7 dias
-                const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toUTCString();
+                // Agregar un refresh token que expira en 150 segundos
+                const expires = new Date(Date.now() + 150 * 1000).toUTCString();
                 document.cookie = `fakeRefreshToken=${token}; expires=${expires}; path=/`;
 
                 return token;

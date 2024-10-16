@@ -9,3 +9,7 @@ export interface User {
     jwtToken?: string,
     refreshTokens: string[]
 }
+
+export interface UserState {
+    usuarios: User[]
+}

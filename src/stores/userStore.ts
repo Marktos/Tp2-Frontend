@@ -1,12 +1,13 @@
 import { defineStore } from 'pinia';
+import type { UserState, User } from '@/models/UserModel';
 
 export const useUserStore = defineStore('user', {
-  state: () => ({
-    username: '',
+  state: (): UserState => ({
+    usuarios: JSON.parse(localStorage.getItem('vue-3-jwt-refresh-token-users') || ''),
   }),
-  actions: {
-    setUser(user: { username: string }) {
-      this.username = user.username;
-    },
-  },
+   actions: {
+    setUsers(users: User[]): void {
+      this.usuarios = users
+    }
+  }
 });
